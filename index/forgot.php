@@ -1,0 +1,1 @@
+<script> alert('Mail Send Successful.Pls Check Your Email.');</script>;
