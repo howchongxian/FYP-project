@@ -56,7 +56,7 @@ if(isset($_POST["submit"]))
 
     <div class="loginbox">
         <img src="F1/avatar.png" class="avatar" style="margin-top:90px">
-        <h1>Sign Up Here</h1>
+        <h1>Sign Up</h1>
         <form id="loginForm" method="post">
             <p>Username</p>
             <input type="text" name="username" id="username" placeholder="Enter Username" required>
