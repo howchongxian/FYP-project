@@ -6,29 +6,26 @@ if(isset($_POST["submit"]))
     $email = $_POST["email"];
     $password= $_POST["password"];
     $confirmpassword = $_POST["confirmpassword"];
-    $role = $_POST["role"];
     
     $duplicate = mysqli_query($connect,"SELECT * FROM user WHERE username='$username' OR email='$email'");
     if(mysqli_num_rows($duplicate) > 0){
-        echo
-        "<script> alert('Username or Email Has Already Taken');</script>";
+        echo "<script>alert('Username or Email Has Already Registered');</script>";
     }
     else{
         if($password == $confirmpassword){
             $query = "INSERT INTO user (username, email, password, role) VALUES ('$username', '$email', '$password', '$role')";
             mysqli_query($connect, $query);
-            echo
-            "<script> alert('Registration Successful');</script>";
-            
+            echo "<script>alert('Registration Successful');</script>";
+            // Redirect to home page after 2 seconds
+            echo "<script>setTimeout(function(){ window.location.href = 'home.php'; }, 1000);</script>";
         }
         else{
-            echo
-            "<script> alert('Password Does Not Match!');</script>";
+            echo "<script>alert('Password Does Not Match!');</script>";
         }
     }
 }
-
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -66,13 +63,23 @@ if(isset($_POST["submit"]))
             <p>Email</p>
             <input type="email" name="email" id="email" placeholder="Enter Email" required>
             <p>Password</p>
+        <div class="password-container">
             <input type="password" name="password" id="password" placeholder="Enter Password" required>
-            <p>Confirm Password</p>
+            <span class="toggle-password" onclick="togglePasswordVisibility('password')">
+                <i class="uil uil-eye"></i>
+            </span>
+        </div>
+        <p>Confirm Password</p>
+        <div class="password-container">
             <input type="password" name="confirmpassword" id="confirmpassword" placeholder="Confirm Password" required>
-            <select name="role" style="margin-bottom:5px;">
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-            </select>
+            <span class="toggle-password" onclick="togglePasswordVisibility('confirmpassword')">
+                <i class="uil uil-eye"></i>
+            </span>
+        </div>
+        <div class="password-strength">
+            <p>Password Strength:</p>
+            <span id="password-strength"></span>
+        </div>
             <input type="submit" value="Signup" name="submit">
             <div class="signup">
             <span class="text">Have a member?
@@ -211,6 +218,27 @@ input[type="password"] {
     font-size: 16px;
 }
 
+.password-container {
+    position: relative;
+}
+
+.password-container input[type="password"] {
+    width: calc(100% - 30px); /* Adjusted width to accommodate icon */
+}
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.toggle-password i {
+    font-size: 20px;
+    color: #ccc; /* Adjust icon color as needed */
+}
+
 .loginbox input[type="email"],
 input[type="password"] {
     border: none;
@@ -264,81 +292,19 @@ h1 {
 
     <script>
         
-        function myFunction() {
-            var passwordInput = document.getElementById("createPw");
-            if (passwordInput.type === "password") {
-                passwordInput.type = "text";
-            } else {
-                passwordInput.type = "password";
-            }
-        }
-
-        // Password strength checker
-        var passwordInput = document.getElementById('createPw');
-        var passwordStrengthText = document.querySelector('.password-strength');
-
-        passwordInput.addEventListener('input', function() {
-            var password = passwordInput.value;
-            var strength = checkPasswordStrength(password);
-            updatePasswordStrengthText(strength);
-        });
-
-        // Function to check password strength
-        function checkPasswordStrength(password) {
-            var strength = 0;
-
-            // Check the length of the password
-            if (password.length >= 8) {
-                strength += 1;
-            }
-
-            // Check if the password contains uppercase letters
-            if (/[A-Z]/.test(password)) {
-                strength += 1;
-            }
-
-            // Check if the password contains lowercase letters
-            if (/[a-z]/.test(password)) {
-                strength += 1;
-            }
-
-            // Check if the password contains numbers
-            if (/[0-9]/.test(password)) {
-                strength += 1;
-            }
-
-            // Check if the password contains special characters
-            if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
-                strength += 1;
-            }
-
-            return strength;
-        }
-
-        // Function to update the password strength text
-        function updatePasswordStrengthText(strength) {
-            var text = '';
-            var colorClass = '';
-
-            switch (strength) {
-                case 0:
-                    text = 'Weak';
-                    colorClass = 'weak';
-                    break;
-                case 1:
-                case 2:
-                    text = 'Medium';
-                    colorClass = 'medium';
-                    break;
-                default:
-                    text = 'Strong';
-                    colorClass = 'strong';
-                    break;
-            }
-
-            passwordStrengthText.textContent = text;
-            passwordStrengthText.className = 'password-strength ' + colorClass;
-        }
+    function togglePasswordVisibility(fieldId) {
+    var passwordInput = document.getElementById(fieldId);
+    var toggleIcon = passwordInput.nextElementSibling.querySelector("i");
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        toggleIcon.classList.remove("uil-eye");
+        toggleIcon.classList.add("uil-eye-slash");
+    } else {
+        passwordInput.type = "password";
+        toggleIcon.classList.remove("uil-eye-slash");
+        toggleIcon.classList.add("uil-eye");
+    }
+}
 
         // Create account button click event
         var createBtn = document.querySelector('.input-field.button input[type="button"]');
@@ -385,6 +351,65 @@ h1 {
             event.preventDefault();
             window.location.href = "login.html";
         });
+
+        
+        function checkPasswordStrength(password) {
+            var strength = 0;
+
+            // If password length is greater than or equal to 6, increment strength
+            if (password.length >= 6) {
+                strength++;
+            }
+
+            // If password contains both lower and uppercase characters, increment strength
+            if (password.match(/([a-z].*[A-Z])|([A-Z].*[a-z])/)) {
+                strength++;
+            }
+
+            // If password contains numbers and other characters, increment strength
+            if (password.match(/([a-zA-Z])/) && password.match(/([0-9])/)) {
+                strength++;
+            }
+
+            // If password contains special characters, increment strength
+            if (password.match(/([!,%,&,@,#,$,^,*,?,_,~])/)) {
+                strength++;
+            }
+
+            return strength;
+        }
+
+        function updatePasswordStrengthIndicator() {
+            var password = document.getElementById('password').value;
+            var strength = checkPasswordStrength(password);
+            var indicator = document.getElementById('password-strength');
+
+            // Update password strength indicator based on strength level
+            switch (strength) {
+                case 0:
+                case 1:
+                    indicator.innerHTML = 'Very Weak';
+                    break;
+                case 2:
+                    indicator.innerHTML = 'Weak';
+                    break;
+                case 3:
+                    indicator.innerHTML = 'Fair';
+                    break;
+                case 4:
+                    indicator.innerHTML = 'Good';
+                    break;
+                case 5:
+                    indicator.innerHTML = 'Strong';
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Add event listener to password input to update strength indicator on input change
+        var passwordInput = document.getElementById('password');
+        passwordInput.addEventListener('input', updatePasswordStrengthIndicator);
     </script>
 
 
